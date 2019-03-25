@@ -5,7 +5,7 @@
 
 // relacy thread testing
 // put relacy wherever you like, point this at it
-// #include "../relacy_2_3/relacy/relacy.hpp"
+#include "../relacy_2_3/relacy/relacy.hpp"
 
 #include "RingBuffer.h"
 
@@ -30,6 +30,7 @@ struct ring_test : rl::test_suite<ring_test<N>, 2>
 		nextWritten_($) = 0;
 		nextRead_($) = 0;
 	}
+
 	// main thread function
 	void thread(unsigned int threadIndex)
 	{
@@ -73,14 +74,17 @@ struct ring_test : rl::test_suite<ring_test<N>, 2>
 };
 
 template<size_t N>
-void Test()
+void Test(bool full)
 {
 	rl::test_params params;
 
 	// random_scheduler_type,  fair_full_search_scheduler_type, fair_context_bound_scheduler_type
 	//params.search_type = rl::random_scheduler_type;
-	params.search_type = rl::fair_full_search_scheduler_type;
-	//params.search_type = rl::fair_context_bound_scheduler_type;
+    if (full)
+	    params.search_type = rl::fair_full_search_scheduler_type;
+    else
+        params.search_type = rl::random_scheduler_type;
+        //params.search_type = rl::fair_context_bound_scheduler_type;
 
 	params.iteration_count = 1'000'000;
 
@@ -92,7 +96,9 @@ void Test()
 
 void TestRelacy()
 {
-//	Test<3>();
-//	Test<4>();
-//	Test<5>();
+    Test<10>(false);
+    return;
+    Test<3>(true);
+	Test<4>(true);
+	Test<5>(true);
 }

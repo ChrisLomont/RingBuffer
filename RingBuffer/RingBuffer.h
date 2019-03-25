@@ -141,7 +141,7 @@ public:
 	bool Put(const DataType & datum)
 	{ // paper above has ability to write bigger blocks, is faster
 		const auto w = writeIndex_.load(NM::memory_order_relaxed);
-		const auto nextWrite = Next(w);
+		const auto nextWrite = RingMod::Mod2N(w + 1);
 		if (nextWrite != readIndex_.load(NM::memory_order_acquire))
 		{
 			buffer_[RingMod::Mod1N(w)] = datum;
@@ -159,7 +159,7 @@ public:
 		if (r != writeIndex_.load(NM::memory_order_acquire))
 		{
 			data = buffer_[RingMod::Mod1N(r)];
-			readIndex_.store(Next(r), NM::memory_order_release);
+			readIndex_.store(RingMod::Mod2N(r + 1), NM::memory_order_release);
 			return true;
 		}
 		return false; // buffer empty
@@ -179,7 +179,7 @@ public:
 		for (auto i = 0; i < n; ++i)
 		{
 			buffer_[RingMod::Mod1N(w)] = data[i];
-			w = Next(w);
+			w = RingMod::Mod2N(w + 1);
 		}
 		writeIndex_.store(w, NM::memory_order_release);
 		return true;
@@ -198,7 +198,7 @@ public:
 		for (auto i = 0; i < n; ++i)
 		{
 			data[i] = buffer_[RingMod::Mod1N(r)];
-			r = Next(r);
+            r = RingMod::Mod2N(r + 1);
 		}
 		readIndex_.store(r, NM::memory_order_release);
 		return true;
@@ -220,12 +220,6 @@ private:
 	IndexType pWriteIndex_{ 0 }; // predictive write index, cache neighbors
 #endif
 
-	// add one to index, return mod 2N in [0,N-1]
-	static inline IndexType Next(const IndexType & index)
-	{
-		assert(0 <= index && index < 4 * N);
-		return RingMod::Mod2N(index + 1);
-	}
 #endif
 };
 

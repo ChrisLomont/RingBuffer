@@ -39,7 +39,7 @@ public:
 	bool Put(const DataType & datum)
 	{ // paper above has ability to write bigger blocks, is faster
 		const auto w = writeIndex_.load(std::memory_order_relaxed);
-		const auto nextWrite = Next(w);
+		const auto nextWrite = RingMod::Mod2N(w + 1);
 		if (nextWrite != readIndex_.load(std::memory_order_acquire))
 		{
 			buffer_[RingMod::Mod1N(w)] = datum;
@@ -57,7 +57,7 @@ public:
 		if (r != writeIndex_.load(std::memory_order_acquire))
 		{
 			data = buffer_[RingMod::Mod1N(r)];
-			readIndex_.store(Next(r), std::memory_order_release);
+			readIndex_.store(RingMod::Mod2N(r + 1), std::memory_order_release);
 			return true;
 		}
 		return false; // buffer empty
@@ -71,13 +71,4 @@ private:
 	std::atomic<IndexType> writeIndex_{ 0 };
 	std::atomic<IndexType> readIndex_{ 0 };
 	std::array<DataType, N> buffer_;
-
-	// add one to index, return mod 2N in [0,N-1]
-	static inline IndexType Next(const IndexType & index)
-	{
-		assert(0 <= index && index < 4 * N);
-		return RingMod::Mod2N(index + 1);
-	}
-
-
 };

@@ -19,10 +19,9 @@
 using namespace Lomont;
 using namespace std;
 
-void PerformanceI()
+void PerformanceI(int bytes)
 { // Simple,Generic,Locked, all single threaded
 
-	int bytes = 3'000'000;
 	cout << "Performance I" << endl;
 	ThroughputSingle<29,  16, SimpleRingBuffer <29>>(bytes);
 	ThroughputSingle<29,  16, GenericRingBuffer<29>>(bytes);
@@ -53,10 +52,8 @@ void PerformanceI()
 	ThroughputSingle<130, 19, GenericRingBuffer<130>>(bytes);
 }
 
-void PerformanceII()
+void PerformanceII(int bytes)
 {   // Generic, Locked, Atomics, single and double threaded
-
-	int bytes = 3'000'000;
 
 	cout << "Performance II" << endl;
 	ThroughputSingle<29, 16, GenericRingBuffer<29>>(bytes);
@@ -82,10 +79,8 @@ void PerformanceII()
 	ThroughputDouble<128, 16, AtomicsRingBuffer<128>>(bytes / 5);
 }
 
-void PerformanceIII()
+void PerformanceIII(int bytes)
 {   // Atomics, modulus, relaxed, single and double threaded
-
-	int bytes = 3'000'000;
 
 	cout << "Performance III - modulus" << endl;
 	ThroughputSingle<127, 16, AtomicsRingBuffer <127>>(bytes);
@@ -136,9 +131,10 @@ void PerformanceIII()
 	ThroughputDouble<128, 16, RelaxedRingBuffer<128>>(bytes);
 }
 
-void PerformanceIV()
+void PerformanceIV(int bytes)
 {   // Relaxed, full size, cache, blocks, predictive
-	int bytes = 8'000'000;
+	bytes *= 8;
+	bytes /= 3;
 	cout << "Performance IV - single" << endl;
 	ThroughputSingle<29, 16, RelaxedRingBuffer<29>>(bytes);
 	ThroughputSingle<29, 16, FullRingBuffer   <29>>(bytes);
@@ -192,9 +188,10 @@ void PerformanceIV()
 	ThroughputDouble<128, 16, RingBuffer       <128>>(bytes);
 }
 
-void PerformanceV()
+void PerformanceV(int bytes)
 {   // Blocks, predictive
-	int bytes = 8'000'000;
+	bytes *= 8;
+	bytes /= 3;
 
 	cout << "Performance IV - one item vs blocks" << endl;
 
@@ -210,35 +207,35 @@ void PerformanceV()
 	ThroughputDoubleBlock<128, 16, RingBuffer       <128>>(bytes);
 }
 
-void PerformanceVI()
+void PerformanceVI(int bytes)
 {   // final all
 	
 	constexpr size_t N = 128;
 	constexpr size_t M = 16;
-	long size = 1'000'000; // pick sizes so that each sample around 25 ms
+	bytes /= 3;
 
 	cout << "Performance VI - single all" << endl;
-	ThroughputSingle<N, M, SimpleRingBuffer <N>>(size * 3);    // single thread, simple to implement
-	ThroughputSingle<N, M, GenericRingBuffer<N>>(size * 10);   // Templatized things									  
-	ThroughputSingle<N, M, LockedRingBuffer <N>>(size / 5);    // added locks, API now bad
-	ThroughputSingle<N, M, AtomicsRingBuffer<N>>(size);        // SPSC using atomics
-	ThroughputSingle<N, M, ModulusRingBuffer<N>>(size);        // power of 2 specialized
-	ThroughputSingle<N, M, RelaxedRingBuffer<N>>(size * 20);   // relaxed atomic memory model
-	ThroughputSingle<N, M, FullRingBuffer   <N>>(size * 20);   // use all items
-	ThroughputSingle<N, M, CacheRingBuffer  <N>>(size * 20);   // cache lines
-	ThroughputSingleBlock<N, M, BlocksRingBuffer <N>>(size * 20);   // read/write blocks
-	ThroughputSingleBlock<N, M, RingBuffer       <N>>(size * 20);   // added predictive read/write to avoid false sharing
+	ThroughputSingle<N, M, SimpleRingBuffer <N>>(bytes * 3);    // single thread, simple to implement
+	ThroughputSingle<N, M, GenericRingBuffer<N>>(bytes * 10);   // Templatized things									  
+	ThroughputSingle<N, M, LockedRingBuffer <N>>(bytes / 5);    // added locks, API now bad
+	ThroughputSingle<N, M, AtomicsRingBuffer<N>>(bytes);        // SPSC using atomics
+	ThroughputSingle<N, M, ModulusRingBuffer<N>>(bytes);        // power of 2 specialized
+	ThroughputSingle<N, M, RelaxedRingBuffer<N>>(bytes * 20);   // relaxed atomic memory model
+	ThroughputSingle<N, M, FullRingBuffer   <N>>(bytes * 20);   // use all items
+	ThroughputSingle<N, M, CacheRingBuffer  <N>>(bytes * 20);   // cache lines
+	ThroughputSingleBlock<N, M, BlocksRingBuffer <N>>(bytes * 20);   // read/write blocks
+	ThroughputSingleBlock<N, M, RingBuffer       <N>>(bytes * 20);   // added predictive read/write to avoid false sharing
 
 	cout << "Performance VI - double all" << endl;
-	size /= 5;
-	ThroughputDouble<N, M, LockedRingBuffer <N>>(size / 30);   // added locks, API now bad
-	ThroughputDouble<N, M, AtomicsRingBuffer<N>>(size);        // SPSC using atomics
-	ThroughputDouble<N, M, ModulusRingBuffer<N>>(size);        // power of 2 specialized
-	ThroughputDouble<N, M, RelaxedRingBuffer<N>>(size * 2);   // relaxed atomic memory model
-	ThroughputDouble<N, M, FullRingBuffer   <N>>(size * 2);   // use all items
-	ThroughputDouble<N, M, CacheRingBuffer  <N>>(size * 2);   // cache lines
-	ThroughputDoubleBlock<N, M, BlocksRingBuffer <N>>(size * 20);   // read/write blocks
-	ThroughputDoubleBlock<N, M, RingBuffer       <N>>(size * 20);   // added predictive read/write to avoid false sharing
+	bytes /= 5;
+	ThroughputDouble<N, M, LockedRingBuffer <N>>(bytes / 30);   // added locks, API now bad
+	ThroughputDouble<N, M, AtomicsRingBuffer<N>>(bytes);        // SPSC using atomics
+	ThroughputDouble<N, M, ModulusRingBuffer<N>>(bytes);        // power of 2 specialized
+	ThroughputDouble<N, M, RelaxedRingBuffer<N>>(bytes * 2);   // relaxed atomic memory model
+	ThroughputDouble<N, M, FullRingBuffer   <N>>(bytes * 2);   // use all items
+	ThroughputDouble<N, M, CacheRingBuffer  <N>>(bytes * 2);   // cache lines
+	ThroughputDoubleBlock<N, M, BlocksRingBuffer <N>>(bytes * 20);   // read/write blocks
+	ThroughputDoubleBlock<N, M, RingBuffer       <N>>(bytes * 20);   // added predictive read/write to avoid false sharing
 
 
 }
@@ -312,8 +309,15 @@ void TestTimingBySize()
 	ThroughputSingle<N, M, SimpleRingBuffer <N>>(51'200'000);   // single thread, simple to implement
 }
 
+
 int main()
 {
+	FinalStressTest<126>();
+
+    extern void TestRelacy();
+	TestRelacy(); // do relacy thread checker testing
+    return 0;
+
 	//auto bytes = 3'000'000;
 	//ThroughputDouble<29, 16, AtomicsRingBuffer<29>>(bytes / 10000);
 	//ThroughputDouble<29, 16, ModulusRingBuffer<29>>(bytes / 2);
@@ -331,15 +335,15 @@ int main()
 	//	TestAllSingle();  // each through single threaded
 	//	TestAllDouble();  // each through single threaded
 
-	// TestRelacy(); // do relacy thread checker testing
 
 	// particular tests for talk slides
-	//PerformanceI();
-	//PerformanceII();
-	//PerformanceIII();
-	//PerformanceIV();
-	//PerformanceV();
-	PerformanceVI();
+	//int bytes = 3'000'000;
+	//PerformanceI(bytes);
+	//PerformanceII(bytes);
+	//PerformanceIII(bytes);
+	//PerformanceIV(bytes);
+	//PerformanceV(bytes);
+	//PerformanceVI(bytes);
 	return 0;
 }
 // end of file
