@@ -56,45 +56,54 @@ void PerformanceI()
 void PerformanceII()
 {   // Generic, Locked, Atomics, single and double threaded
 
-	int bytes = 10'000'000;
+	int bytes = 3'000'000;
+
 	cout << "Performance II" << endl;
 	ThroughputSingle<29, 16, GenericRingBuffer<29>>(bytes);
-	ThroughputSingle<29, 16, LockedRingBuffer <29>>(bytes);
+	ThroughputSingle<29, 16, LockedRingBuffer <29>>(bytes/5);
 	ThroughputSingle<29, 16, AtomicsRingBuffer<29>>(bytes);
 						 
 	ThroughputSingle<32, 16, GenericRingBuffer<32>>(bytes);
-	ThroughputSingle<32, 16, LockedRingBuffer <32>>(bytes);
+	ThroughputSingle<32, 16, LockedRingBuffer <32>>(bytes/5);
 	ThroughputSingle<32, 16, AtomicsRingBuffer<32>>(bytes);
 
 	ThroughputSingle<50 ,16, GenericRingBuffer<50>>(bytes);
-	ThroughputSingle<50, 16, LockedRingBuffer <50>>(bytes);
+	ThroughputSingle<50, 16, LockedRingBuffer <50>>(bytes/5);
 	ThroughputSingle<50, 16, AtomicsRingBuffer<50>>(bytes);
 
 	ThroughputSingle<128, 16, GenericRingBuffer<128>>(bytes);
-	ThroughputSingle<128, 16, LockedRingBuffer <128>>(bytes);
+	ThroughputSingle<128, 16, LockedRingBuffer <128>>(bytes/5);
 	ThroughputSingle<128, 16, AtomicsRingBuffer<128>>(bytes);
 
-	ThroughputDouble<128, 16, LockedRingBuffer <128>>(bytes/10);
-	ThroughputDouble<128, 16, AtomicsRingBuffer<128>>(bytes/10);
 
+	cout << "Performance II - throughput 2 threads" << endl;
+
+	ThroughputDouble<128, 16, LockedRingBuffer <128>>(bytes / 500);
+	ThroughputDouble<128, 16, AtomicsRingBuffer<128>>(bytes / 5);
 }
 
 void PerformanceIII()
 {   // Atomics, modulus, relaxed, single and double threaded
 
-	int bytes = 10'000'000;
-	cout << "Performance III" << endl;
+	int bytes = 3'000'000;
 
+	cout << "Performance III - modulus" << endl;
+	ThroughputSingle<127, 16, AtomicsRingBuffer <127>>(bytes);
 	ThroughputSingle<127, 16, ModulusRingBuffer <127, char, uint32_t, SlowRingMod<127, uint32_t>>>(bytes);
 	ThroughputSingle<127, 16, ModulusRingBuffer <127, char, uint32_t, MidRingMod<127, uint32_t>>>(bytes);
 	ThroughputSingle<127, 16, ModulusRingBuffer <127, char, uint32_t, FastRingMod<127, uint32_t>>>(bytes);
-	ThroughputSingle<128, 16, ModulusRingBuffer <128, char, uint32_t, SlowRingMod<128,uint32_t>>>(bytes);
+
+	ThroughputSingle<128, 16, AtomicsRingBuffer <128>>(bytes);
+	ThroughputSingle<128, 16, ModulusRingBuffer <128, char, uint32_t, SlowRingMod<128, uint32_t>>>(bytes);
 	ThroughputSingle<128, 16, ModulusRingBuffer <128, char, uint32_t, MidRingMod<128, uint32_t>>>(bytes);
 	ThroughputSingle<128, 16, ModulusRingBuffer <128, char, uint32_t, FastRingMod<128, uint32_t>>>(bytes);
+
+	ThroughputSingle<129, 16, AtomicsRingBuffer <129>>(bytes);
 	ThroughputSingle<129, 16, ModulusRingBuffer <129, char, uint32_t, SlowRingMod<129, uint32_t>>>(bytes);
 	ThroughputSingle<129, 16, ModulusRingBuffer <129, char, uint32_t, MidRingMod<129, uint32_t>>>(bytes);
 	ThroughputSingle<129, 16, ModulusRingBuffer <129, char, uint32_t, FastRingMod<129, uint32_t>>>(bytes);
 
+	cout << "Performance III - all single" << endl;
 	ThroughputSingle<29, 16, AtomicsRingBuffer<29>>(bytes);
 	ThroughputSingle<29, 16, ModulusRingBuffer<29>>(bytes);
 	ThroughputSingle<29, 16, RelaxedRingBuffer<29>>(bytes);
@@ -111,10 +120,126 @@ void PerformanceIII()
 	ThroughputSingle<128, 16, ModulusRingBuffer <128>>(bytes);
 	ThroughputSingle<128, 16, RelaxedRingBuffer<128>>(bytes);
 
-
-	ThroughputDouble<128, 16, AtomicsRingBuffer <128>>(bytes);
-	ThroughputDouble<128, 16, ModulusRingBuffer<128>>(bytes);
+	cout << "Performance III - all double" << endl;
+	bytes /= 4;
+	ThroughputDouble<29, 16, AtomicsRingBuffer<29>>(bytes/2);
+	ThroughputDouble<29, 16, ModulusRingBuffer<29>>(bytes/2);
+	ThroughputDouble<29, 16, RelaxedRingBuffer<29>>(bytes);
+	ThroughputDouble<32, 16, AtomicsRingBuffer<32>>(bytes/2);
+	ThroughputDouble<32, 16, ModulusRingBuffer <32>>(bytes/2);
+	ThroughputDouble<32, 16, RelaxedRingBuffer<32>>(bytes);
+	ThroughputDouble<50, 16, AtomicsRingBuffer<50>>(bytes/2);
+	ThroughputDouble<50, 16, ModulusRingBuffer <50>>(bytes/2);
+	ThroughputDouble<50, 16, RelaxedRingBuffer<50>>(bytes);
+	ThroughputDouble<128, 16, AtomicsRingBuffer<128>>(bytes/2);
+	ThroughputDouble<128, 16, ModulusRingBuffer <128>>(bytes/2);
 	ThroughputDouble<128, 16, RelaxedRingBuffer<128>>(bytes);
+}
+
+void PerformanceIV()
+{   // Relaxed, full size, cache, blocks, predictive
+	int bytes = 8'000'000;
+	cout << "Performance IV - single" << endl;
+	ThroughputSingle<29, 16, RelaxedRingBuffer<29>>(bytes);
+	ThroughputSingle<29, 16, FullRingBuffer   <29>>(bytes);
+	ThroughputSingle<29, 16, CacheRingBuffer  <29>>(bytes);
+	ThroughputSingle<29, 16, BlocksRingBuffer <29>>(bytes);
+	ThroughputSingle<29, 16, RingBuffer       <29>>(bytes);
+
+	ThroughputSingle<32, 16, RelaxedRingBuffer<32>>(bytes);
+	ThroughputSingle<32, 16, FullRingBuffer   <32>>(bytes);
+	ThroughputSingle<32, 16, CacheRingBuffer  <32>>(bytes);
+	ThroughputSingle<32, 16, BlocksRingBuffer <32>>(bytes);
+	ThroughputSingle<32, 16, RingBuffer       <32>>(bytes);
+
+	ThroughputSingle<50, 16, RelaxedRingBuffer<50>>(bytes);
+	ThroughputSingle<50, 16, FullRingBuffer   <50>>(bytes);
+	ThroughputSingle<50, 16, CacheRingBuffer  <50>>(bytes);
+	ThroughputSingle<50, 16, BlocksRingBuffer <50>>(bytes);
+	ThroughputSingle<50, 16, RingBuffer       <50>>(bytes);
+
+	ThroughputSingle<128, 16, RelaxedRingBuffer<128>>(bytes);
+	ThroughputSingle<128, 16, FullRingBuffer   <128>>(bytes);
+	ThroughputSingle<128, 16, CacheRingBuffer  <128>>(bytes);
+	ThroughputSingle<128, 16, BlocksRingBuffer <128>>(bytes);
+	ThroughputSingle<128, 16, RingBuffer       <128>>(bytes);
+
+	cout << "Performance IV - double" << endl;
+	bytes /= 10;
+
+	ThroughputDouble<29, 16, RelaxedRingBuffer<29>>(bytes);
+	ThroughputDouble<29, 16, FullRingBuffer   <29>>(bytes);
+	ThroughputDouble<29, 16, CacheRingBuffer  <29>>(bytes);
+	ThroughputDouble<29, 16, BlocksRingBuffer <29>>(bytes);
+	ThroughputDouble<29, 16, RingBuffer       <29>>(bytes);
+
+	ThroughputDouble<32, 16, RelaxedRingBuffer<32>>(bytes);
+	ThroughputDouble<32, 16, FullRingBuffer   <32>>(bytes);
+	ThroughputDouble<32, 16, CacheRingBuffer  <32>>(bytes);
+	ThroughputDouble<32, 16, BlocksRingBuffer <32>>(bytes);
+	ThroughputDouble<32, 16, RingBuffer       <32>>(bytes);
+
+	ThroughputDouble<50, 16, RelaxedRingBuffer<50>>(bytes);
+	ThroughputDouble<50, 16, FullRingBuffer   <50>>(bytes);
+	ThroughputDouble<50, 16, CacheRingBuffer  <50>>(bytes);
+	ThroughputDouble<50, 16, BlocksRingBuffer <50>>(bytes);
+	ThroughputDouble<50, 16, RingBuffer       <50>>(bytes);
+
+	ThroughputDouble<128, 16, RelaxedRingBuffer<128>>(bytes);
+	ThroughputDouble<128, 16, FullRingBuffer   <128>>(bytes);
+	ThroughputDouble<128, 16, CacheRingBuffer  <128>>(bytes);
+	ThroughputDouble<128, 16, BlocksRingBuffer <128>>(bytes);
+	ThroughputDouble<128, 16, RingBuffer       <128>>(bytes);
+}
+
+void PerformanceV()
+{   // Blocks, predictive
+	int bytes = 8'000'000;
+
+	cout << "Performance IV - one item vs blocks" << endl;
+
+	ThroughputSingle<128, 16, BlocksRingBuffer <128>>(bytes);
+	ThroughputSingle<128, 16, RingBuffer       <128>>(bytes);
+	ThroughputSingleBlock<128, 16, BlocksRingBuffer <128>>(bytes);
+	ThroughputSingleBlock<128, 16, RingBuffer       <128>>(bytes);
+
+	bytes /= 10;
+	ThroughputDouble<128, 16, BlocksRingBuffer <128>>(bytes);
+	ThroughputDouble<128, 16, RingBuffer       <128>>(bytes);
+	ThroughputDoubleBlock<128, 16, BlocksRingBuffer <128>>(bytes);
+	ThroughputDoubleBlock<128, 16, RingBuffer       <128>>(bytes);
+}
+
+void PerformanceVI()
+{   // final all
+	
+	constexpr size_t N = 128;
+	constexpr size_t M = 16;
+	long size = 1'000'000; // pick sizes so that each sample around 25 ms
+
+	cout << "Performance VI - single all" << endl;
+	ThroughputSingle<N, M, SimpleRingBuffer <N>>(size * 3);    // single thread, simple to implement
+	ThroughputSingle<N, M, GenericRingBuffer<N>>(size * 10);   // Templatized things									  
+	ThroughputSingle<N, M, LockedRingBuffer <N>>(size / 5);    // added locks, API now bad
+	ThroughputSingle<N, M, AtomicsRingBuffer<N>>(size);        // SPSC using atomics
+	ThroughputSingle<N, M, ModulusRingBuffer<N>>(size);        // power of 2 specialized
+	ThroughputSingle<N, M, RelaxedRingBuffer<N>>(size * 20);   // relaxed atomic memory model
+	ThroughputSingle<N, M, FullRingBuffer   <N>>(size * 20);   // use all items
+	ThroughputSingle<N, M, CacheRingBuffer  <N>>(size * 20);   // cache lines
+	ThroughputSingleBlock<N, M, BlocksRingBuffer <N>>(size * 20);   // read/write blocks
+	ThroughputSingleBlock<N, M, RingBuffer       <N>>(size * 20);   // added predictive read/write to avoid false sharing
+
+	cout << "Performance VI - double all" << endl;
+	size /= 5;
+	ThroughputDouble<N, M, LockedRingBuffer <N>>(size / 30);   // added locks, API now bad
+	ThroughputDouble<N, M, AtomicsRingBuffer<N>>(size);        // SPSC using atomics
+	ThroughputDouble<N, M, ModulusRingBuffer<N>>(size);        // power of 2 specialized
+	ThroughputDouble<N, M, RelaxedRingBuffer<N>>(size * 2);   // relaxed atomic memory model
+	ThroughputDouble<N, M, FullRingBuffer   <N>>(size * 2);   // use all items
+	ThroughputDouble<N, M, CacheRingBuffer  <N>>(size * 2);   // cache lines
+	ThroughputDoubleBlock<N, M, BlocksRingBuffer <N>>(size * 20);   // read/write blocks
+	ThroughputDoubleBlock<N, M, RingBuffer       <N>>(size * 20);   // added predictive read/write to avoid false sharing
+
 
 }
 
@@ -189,6 +314,12 @@ void TestTimingBySize()
 
 int main()
 {
+	//auto bytes = 3'000'000;
+	//ThroughputDouble<29, 16, AtomicsRingBuffer<29>>(bytes / 10000);
+	//ThroughputDouble<29, 16, ModulusRingBuffer<29>>(bytes / 2);
+	//ThroughputDouble<29, 16, RelaxedRingBuffer<29>>(bytes);
+	//return 1;
+
 	//TestSanity(1000); // sanity check a buffer
 
 	ShowLogFormat();
@@ -203,48 +334,12 @@ int main()
 	// TestRelacy(); // do relacy thread checker testing
 
 	// particular tests for talk slides
-	PerformanceI();
-	// PerformanceII();
-	// PerformanceIII();
+	//PerformanceI();
+	//PerformanceII();
+	//PerformanceIII();
+	//PerformanceIV();
+	//PerformanceV();
+	PerformanceVI();
 	return 0;
 }
-
-
-/*
-#include <vector>
-// Implement a simple single threaded ring buffer
-
-class SimpleRingBuffer1
-{
-public:
-	SimpleRingBuffer1(std::size_t size) : size_(size), buffer_(size) { }
-
-	size_t AvailableToRead() const	{
-		return (writeIndex_ - readIndex_ + size_) % size_;	}
-
-	size_t AvailableToWrite() const { return Size() - AvailableToRead(); }
-	bool IsEmpty() const { return AvailableToRead() == 0; }
-	bool IsFull() const { return AvailableToRead() == size_; }
-	size_t Size() const { return size_; }
-	bool Put(char datum)
-	{
-		if (IsFull()) return false;
-		buffer_[writeIndex_] = datum;
-		writeIndex_ = (writeIndex_ + 1) % size_;
-		return true;
-	}
-	bool Get(char & datum)
-	{
-		if (IsEmpty()) return false;
-		datum = buffer_[readIndex_];
-		readIndex_ = (readIndex_ + 1) % size_;
-		return true;
-	}
-private:
-	std::size_t size_;
-	uint32_t readIndex_{ 0 };
-	uint32_t writeIndex_{ 0 };
-	std::vector<char> buffer_;
-};
-
-*/
+// end of file

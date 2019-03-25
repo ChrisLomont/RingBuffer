@@ -19,8 +19,11 @@ public:
 	// undefined to call from any other thread
 	size_t AvailableToRead() const
 	{
-		return (writeIndex_ - readIndex_ + N) % N;
+		// see comment in simple on why this cast is needed
+		return (static_cast<size_t>(writeIndex_) - readIndex_ + N) % N;
 	}
+
+
 
 	// how many items available to write in [0,Size]
 	// if called from consumer, true size may be less since producer can be adding

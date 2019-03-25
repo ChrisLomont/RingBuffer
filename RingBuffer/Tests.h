@@ -51,18 +51,28 @@ long ZeroToOne(long v) { if (v != 0) return v; return 1; }
 
 inline void Log(const Stats & stats)
 {
+	char name[1000];
+	sprintf(name, "%s", stats.typeString);
+	// excel having a mess importing names with ',' even when escaped, so...
+	char * p = name;
+	while (*p != 0)
+	{
+		if (*p == ',')
+			*p = ':';
+		p++;
+	}
 	char buffer[1000];
 	auto avgElapsedMs = stats.total / stats.passCount; // ms/pass
 	auto avgMB10 = (10000 * stats.size / ZeroToOne(avgElapsedMs)) / (1UL << 20);
 	auto minMB10 = (10000 * stats.size / ZeroToOne(stats.max)) / (1UL << 20);
 	auto maxMB10 = (10000 * stats.size / ZeroToOne(stats.min)) / (1UL << 20);
-	sprintf(buffer, "%s, %ld, %ld, %lld.%lld, %lld.%lld, %lld.%lld, %d, \"%s\", %ld, ",
+	sprintf(buffer, "%s, %ld, %ld, %lld.%lld, %lld.%lld, %lld.%lld, %d, %s, %ld, ",
 		stats.testName,
 		(long)stats.bufferSize, (long)stats.blockSize,
 		avgMB10/10, avgMB10%10,
 		minMB10/10, minMB10%10,
 		maxMB10/10, maxMB10%10,
-		stats.success, stats.typeString,
+		stats.success, name,
 		avgElapsedMs
 	);
 	std::cout << buffer << std::endl;
@@ -274,6 +284,8 @@ bool ThroughputDouble(long size)
 		for (auto i = 0; i < sizeof(buffer); ++i)
 			buffer[i] = rnd.Next();
 
+		long errors1 = 0, errors2 = 0;
+
 		sw.Reset();
 		sw.Start();
 
@@ -290,7 +302,8 @@ bool ThroughputDouble(long size)
 					while (rb.AvailableToWrite() < 1)
 					{ // spin 
 					}
-					rb.Put(buffer[writer]);
+					errors1 += !rb.Put(buffer[writer]);
+					// if (errors1) std::cout << "ERRORS1\n"; // todo - remove
 					writer = (writer + 1) & 1023;
 				}
 				processed += M;
@@ -311,7 +324,8 @@ bool ThroughputDouble(long size)
 					while (rb.AvailableToRead() < 1)
 					{ // spin 
 					}
-					rb.Get(buffer[reader]);
+					errors2 += !rb.Get(buffer[reader]);
+					// if (errors2) std::cout << "ERRORS2\n"; // todo - remove
 					reader = (reader + 1) & 1023;
 				}
 				processed += M;
@@ -325,6 +339,10 @@ bool ThroughputDouble(long size)
 
 		sw.Stop();
 		stats.Add(sw.ElapsedMs());
+
+		stats.success = errors1 + errors2 == 0;
+		if (!stats.success)
+			std::cout << "ERROR: thread r/w errors" << std::endl;
 
 		// check matches
 		rnd.seed = 0x12345;
@@ -341,7 +359,7 @@ bool ThroughputDouble(long size)
 // simple checks
 // return true on success
 // error msg  and false on error
-template<size_t N, size_t M, typename RingType = RingBuffer<N>>
+template<size_t N, size_t M, typename RingType = Lomont::RingBuffer<N>>
 bool SanityCheck(long size)
 {
 	RingType rb;
