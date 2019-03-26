@@ -15,7 +15,7 @@
 template<size_t N>
 struct ring_test : rl::test_suite<ring_test<N>, 2>
 {
-	Lomont::RingBuffer<N, char, uint32_t> buffer;
+	Lomont::RingBuffer<N, char, int32_t> buffer;
 
 	rl::var<int> nextWritten_;
 	rl::var<int> nextRead_;
@@ -78,17 +78,19 @@ void Test(bool full)
 {
 	rl::test_params params;
 
-	// random_scheduler_type,  fair_full_search_scheduler_type, fair_context_bound_scheduler_type
-	//params.search_type = rl::random_scheduler_type;
-    if (full)
-	    params.search_type = rl::fair_full_search_scheduler_type;
-    else
-        params.search_type = rl::random_scheduler_type;
-        //params.search_type = rl::fair_context_bound_scheduler_type;
-
 	params.iteration_count = 1'000'000;
 
+	params.search_type = rl::fair_context_bound_scheduler_type;
 	rl::simulate<ring_test<N>>(params);
+
+	params.search_type = rl::random_scheduler_type;
+	rl::simulate<ring_test<N>>(params);
+
+	if (full)
+	{
+		params.search_type = rl::fair_full_search_scheduler_type;
+		rl::simulate<ring_test<N>>(params);
+	}
 
 }
 #endif
@@ -96,9 +98,36 @@ void Test(bool full)
 
 void TestRelacy()
 {
-    Test<10>(false);
-    return;
     Test<3>(true);
 	Test<4>(true);
 	Test<5>(true);
+
+	Test<10>(false);
+	
+	Test<31>(false);
+	Test<32>(false);
+	Test<33>(false);
+	Test<34>(false);
+
+	Test<63>(false);
+	Test<64>(false);
+	Test<65>(false);
+
+	Test<126>(false);
+	Test<127>(false);
+	Test<128>(false);
+	Test<129>(false);
+	Test<130>(false);
+
+	Test<254>(false);
+	Test<255>(false);
+	Test<256>(false);
+	Test<257>(false);
+	Test<258>(false);
+
+	Test<505>(false);
+	Test<511>(false);
+	Test<512>(false);
+	Test<517>(false);
+	Test<525>(false);
 }

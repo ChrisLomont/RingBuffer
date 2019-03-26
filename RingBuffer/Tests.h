@@ -66,7 +66,7 @@ inline void Log(const Stats & stats)
 	auto avgMB10 = (10000 * stats.size / ZeroToOne(avgElapsedMs)) / (1ULL << 20);
 	auto minMB10 = (10000 * stats.size / ZeroToOne(stats.max)) / (1ULL << 20);
 	auto maxMB10 = (10000 * stats.size / ZeroToOne(stats.min)) / (1ULL << 20);
-	sprintf(buffer, "%s, %lld, %lld, %lld.%lld, %lld.%lld, %lld.%lld, %d, %s, %ld, ",
+	sprintf(buffer, "%s, %ld, %ld, %lld.%lld, %lld.%lld, %lld.%lld, %d, %s, %ld, ",
 		stats.testName,
 		(long)stats.bufferSize, (long)stats.blockSize,
 		avgMB10/10, avgMB10%10,

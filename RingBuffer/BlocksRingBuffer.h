@@ -72,11 +72,10 @@ public:
 		auto r = readIndex_.load(std::memory_order_acquire);
 		if (Size() - RingMod::Mod2N(2 * N + w - r) < n)
 			return false; // does not fit
+		auto t = RingMod::Mod1N(w);
 		for (auto i = 0; i < n; ++i)
-		{
-			buffer_[RingMod::Mod1N(w)] = data[i];
-			w = RingMod::Mod2N(w + 1);
-		}
+			buffer_[RingMod::Mod1N(t+i)] = data[i];
+		w = RingMod::Mod2N(w + n);
 		writeIndex_.store(w, std::memory_order_release);
 		return true;
 	}
@@ -88,11 +87,10 @@ public:
 		auto r = readIndex_.load(std::memory_order_acquire);
 		if (RingMod::Mod2N(2 * N + w - r) < n) // predicted available to read
 			return false; // not available
+		auto t = RingMod::Mod1N(r);
 		for (auto i = 0; i < n; ++i)
-		{
-			data[i] = buffer_[RingMod::Mod1N(r)];
-			r = RingMod::Mod2N(r + 1);
-		}
+			data[i] = buffer_[RingMod::Mod1N(t+i)];
+		r = RingMod::Mod2N(r + n);
 		readIndex_.store(r, std::memory_order_release);
 		return true;
 	}

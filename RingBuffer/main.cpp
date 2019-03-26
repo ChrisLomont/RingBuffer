@@ -191,20 +191,20 @@ void PerformanceIV(int bytes)
 void PerformanceV(int bytes)
 {   // Blocks, predictive
 	bytes *= 8;
-	bytes /= 3;
+	bytes /= 2;
 
 	cout << "Performance IV - one item vs blocks" << endl;
 
 	ThroughputSingle<128, 16, BlocksRingBuffer <128>>(bytes);
 	ThroughputSingle<128, 16, RingBuffer       <128>>(bytes);
-	ThroughputSingleBlock<128, 16, BlocksRingBuffer <128>>(bytes);
-	ThroughputSingleBlock<128, 16, RingBuffer       <128>>(bytes);
+	ThroughputSingleBlock<128, 16, BlocksRingBuffer <128>>(bytes*3);
+	ThroughputSingleBlock<128, 16, RingBuffer       <128>>(bytes*3);
 
-	bytes /= 10;
-	ThroughputDouble<128, 16, BlocksRingBuffer <128>>(bytes);
-	ThroughputDouble<128, 16, RingBuffer       <128>>(bytes);
-	ThroughputDoubleBlock<128, 16, BlocksRingBuffer <128>>(bytes);
-	ThroughputDoubleBlock<128, 16, RingBuffer       <128>>(bytes);
+	bytes /= 6;
+	ThroughputDouble<128, 16, BlocksRingBuffer <128>>(bytes/3);
+	ThroughputDouble<128, 16, RingBuffer       <128>>(bytes/3);
+	ThroughputDoubleBlock<128, 16, BlocksRingBuffer <128>>(bytes*4);
+	ThroughputDoubleBlock<128, 16, RingBuffer       <128>>(bytes*4);
 }
 
 void PerformanceVI(int bytes)
@@ -312,18 +312,16 @@ void TestTimingBySize()
 
 int main()
 {
-	FinalStressTest<126>();
 
-    extern void TestRelacy();
-	TestRelacy(); // do relacy thread checker testing
-    return 0;
+	//todo - 
+	//	TODO – can possibly change to not use 2 mod per loop – mod in array w + i, then out of loop mod2n final w + n – errors – why ? Possibly can split into values that stay in bounds, and do those – remove all per loop mod
 
-	//auto bytes = 3'000'000;
-	//ThroughputDouble<29, 16, AtomicsRingBuffer<29>>(bytes / 10000);
-	//ThroughputDouble<29, 16, ModulusRingBuffer<29>>(bytes / 2);
-	//ThroughputDouble<29, 16, RelaxedRingBuffer<29>>(bytes);
-	//return 1;
 
+
+	//FinalStressTest<126>();
+
+    //extern void TestRelacy();
+	//TestRelacy(); // do relacy thread checker testing
 	//TestSanity(1000); // sanity check a buffer
 
 	ShowLogFormat();
@@ -332,18 +330,17 @@ int main()
 	// also fix sizes we test, say 256,16 in general
 	// TestTimingBySize(); 
 
-	//	TestAllSingle();  // each through single threaded
-	//	TestAllDouble();  // each through single threaded
-
+	//TestAllSingle();  // each through single threaded
+	//TestAllDouble();  // each through single threaded
 
 	// particular tests for talk slides
-	//int bytes = 3'000'000;
+	int bytes = 3'000'000;
 	//PerformanceI(bytes);
 	//PerformanceII(bytes);
 	//PerformanceIII(bytes);
 	//PerformanceIV(bytes);
 	//PerformanceV(bytes);
-	//PerformanceVI(bytes);
+	PerformanceVI(bytes);
 	return 0;
 }
 // end of file
