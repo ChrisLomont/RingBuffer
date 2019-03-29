@@ -10,22 +10,27 @@ template <size_t N = 512, typename DataType = char, typename  IndexType = uint32
 class LockedRingBuffer
 {
 public:
+#ifndef SAMD21_BUILD
 	static_assert(std::is_unsigned<IndexType>::value, "Ringbuffer IndexType should be unsigned for numerics");
 	using Scoped = std::lock_guard<std::recursive_mutex>;
+    #define GUARD() Scoped guard(lock_)
+#else
+    #define GUARD() 
+#endif    
 	// how many items available to read in [0,Size]
 	size_t AvailableToRead() const
 	{
-		Scoped guard(lock_); 
+		GUARD(); 
 		// see comment in simple on why this cast is needed
 		return (static_cast<size_t>(writeIndex_) - readIndex_ + N) % N;
 	}
 
 	// how many items available to write in [0,Size]
-	size_t AvailableToWrite() const { Scoped guard(lock_); return Size() - AvailableToRead(); }
+	size_t AvailableToWrite() const { GUARD(); return Size() - AvailableToRead(); }
 
-	bool IsEmpty() const { Scoped guard(lock_); return AvailableToRead() == 0; }
+	bool IsEmpty() const { GUARD(); return AvailableToRead() == 0; }
 
-	bool IsFull() const { Scoped guard(lock_); return AvailableToRead() == Size(); }
+	bool IsFull() const { GUARD(); return AvailableToRead() == Size(); }
 
 	// Max number the buffer can hold
 	// sadly, this design is N-1, not N
@@ -33,7 +38,7 @@ public:
 
 	// try to put the item in, return false if full
 	bool Put(const DataType & datum)
-	{   Scoped guard(lock_);
+	{   GUARD();
 		if (IsFull())
 			return false;
 		buffer_[writeIndex_] = datum;
@@ -43,7 +48,7 @@ public:
 
 	// try to get an item, return false if none available
 	bool Get(DataType & datum)
-	{   Scoped guard(lock_);
+	{   GUARD();
 		if (IsEmpty())
 			return false;
 		datum = buffer_[readIndex_];
@@ -53,8 +58,10 @@ public:
 private:
 	IndexType readIndex_{ 0 };
 	IndexType writeIndex_{ 0 };
-	std::array<DataType, N> buffer_;
+	std::array<DataType, N> buffer_;   
+#ifndef SAMD21_BUILD
 	mutable std::recursive_mutex lock_;
+#endif    
 };
 
 

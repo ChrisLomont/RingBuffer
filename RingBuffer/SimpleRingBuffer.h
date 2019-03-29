@@ -1,7 +1,11 @@
 #pragma once
 
-#include <vector>
 
+#ifdef SAMD21_BUILD
+#include <array>
+#else
+#include <vector>
+#endif
 
 // Implement a simple single threaded ring buffer
 
@@ -10,7 +14,11 @@ template <size_t N = 512>
 class SimpleRingBuffer 
 {
 public:
-	SimpleRingBuffer(int size = N) :buffer_(size) { }
+	SimpleRingBuffer(int size = N) 
+    #ifndef SAMD21_BUILD
+    :buffer_(size) 
+#endif    
+    { }
 
 	// how many items available to read in [0,Size]
 	size_t AvailableToRead() const
@@ -61,6 +69,11 @@ public:
 private:
 	unsigned readIndex_{ 0 };
 	unsigned writeIndex_{ 0 };
+#ifdef SAMD21_BUILD
+    // default lib has no heap
+    std::array<char,128> buffer_; // fix test size
+#else        
 	std::vector<char> buffer_;
+#endif    
 };
 

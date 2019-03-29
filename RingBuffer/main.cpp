@@ -1,28 +1,59 @@
+#if 0
 #include <iostream>
 #include <vector>
 #include <thread>
 
+#ifdef __SAMD21G18A__
+#define SAMD21_BUILD
+#endif
+
 // Ring buffer - 
 #include "SimpleRingBuffer.h"  // single thread, simple
-#include "GenericRingBuffer.h" // template things, inculding size
+#include "GenericRingBuffer.h" // template things, including size
 #include "LockedRingBuffer.h"  // add locks to make threaded
 #include "AtomicsRingBuffer.h" // for SPSC, can replace locks with atomics
 #include "ModulusRingBuffer.h" // remove modulus, use if, or power of 2 tricks
-#include "RelaxedRingBuffer.h" // relax the atomics load/store memort ordering
+#include "RelaxedRingBuffer.h" // relax the atomics load/store memory ordering
 #include "FullRingBuffer.h"    // replace mod N with mod 2N, uses all N buffer slots
 #include "CacheRingBuffer.h"   // move read/write to other locations for cache help
 #include "BlocksRingBuffer.h"  // add read/write in blocks
 #include "RingBuffer.h"        // add predictive read/write locations to loosen false sharing
+
+// send output here
+void WriteLine(const char * line);
+void Write(const char * line);
+void Error(const char * line);
 
 #include "Tests.h"
 
 using namespace Lomont;
 using namespace std;
 
+void Write(const char * line)
+{
+#ifndef SAMD21_BUILD
+    cout << line;
+#endif
+}
+
+void WriteLine(const char * line)
+{
+#ifndef SAMD21_BUILD
+    cout << line << endl;
+#endif
+}
+void Error(const char * line)
+{
+    #ifndef SAMD21_BUILD
+    WriteLine(line);
+    #endif
+}
+
+
 void PerformanceI(int bytes)
 { // Simple,Generic,Locked, all single threaded
 
-	cout << "Performance I" << endl;
+	WriteLine("Performance I");
 	ThroughputSingle<29,  16, SimpleRingBuffer <29>>(bytes);
 	ThroughputSingle<29,  16, GenericRingBuffer<29>>(bytes);
 	ThroughputSingle<29,  16, LockedRingBuffer <29>>(bytes/5);
@@ -39,7 +70,8 @@ void PerformanceI(int bytes)
 	ThroughputSingle<128, 16, GenericRingBuffer<128>>(bytes);
 	ThroughputSingle<128, 16, LockedRingBuffer <128>>(bytes/5);
 
-	cout << "Performance I - near power of 2" << endl;
+	WriteLine("Performance I - near power of 2");
+
 	ThroughputSingle<126, 19, SimpleRingBuffer <126>>(bytes);
 	ThroughputSingle<126, 19, GenericRingBuffer<126>>(bytes);
 	ThroughputSingle<127, 19, SimpleRingBuffer <127>>(bytes);
@@ -55,7 +87,7 @@ void PerformanceI(int bytes)
 void PerformanceII(int bytes)
 {   // Generic, Locked, Atomics, single and double threaded
 
-	cout << "Performance II" << endl;
+	WriteLine("Performance II");
 	ThroughputSingle<29, 16, GenericRingBuffer<29>>(bytes);
 	ThroughputSingle<29, 16, LockedRingBuffer <29>>(bytes/5);
 	ThroughputSingle<29, 16, AtomicsRingBuffer<29>>(bytes);
@@ -73,7 +105,7 @@ void PerformanceII(int bytes)
 	ThroughputSingle<128, 16, AtomicsRingBuffer<128>>(bytes);
 
 
-	cout << "Performance II - throughput 2 threads" << endl;
+	WriteLine("Performance II - throughput 2 threads");
 
 	ThroughputDouble<128, 16, LockedRingBuffer <128>>(bytes / 500);
 	ThroughputDouble<128, 16, AtomicsRingBuffer<128>>(bytes / 5);
@@ -82,7 +114,7 @@ void PerformanceII(int bytes)
 void PerformanceIII(int bytes)
 {   // Atomics, modulus, relaxed, single and double threaded
 
-	cout << "Performance III - modulus" << endl;
+	WriteLine("Performance III - modulus");
 	ThroughputSingle<127, 16, AtomicsRingBuffer <127>>(bytes);
 	ThroughputSingle<127, 16, ModulusRingBuffer <127, char, uint32_t, SlowRingMod<127, uint32_t>>>(bytes);
 	ThroughputSingle<127, 16, ModulusRingBuffer <127, char, uint32_t, MidRingMod<127, uint32_t>>>(bytes);
@@ -98,7 +130,7 @@ void PerformanceIII(int bytes)
 	ThroughputSingle<129, 16, ModulusRingBuffer <129, char, uint32_t, MidRingMod<129, uint32_t>>>(bytes);
 	ThroughputSingle<129, 16, ModulusRingBuffer <129, char, uint32_t, FastRingMod<129, uint32_t>>>(bytes);
 
-	cout << "Performance III - all single" << endl;
+	WriteLine("Performance III - all single");
 	ThroughputSingle<29, 16, AtomicsRingBuffer<29>>(bytes);
 	ThroughputSingle<29, 16, ModulusRingBuffer<29>>(bytes);
 	ThroughputSingle<29, 16, RelaxedRingBuffer<29>>(bytes);
@@ -115,7 +147,7 @@ void PerformanceIII(int bytes)
 	ThroughputSingle<128, 16, ModulusRingBuffer <128>>(bytes);
 	ThroughputSingle<128, 16, RelaxedRingBuffer<128>>(bytes);
 
-	cout << "Performance III - all double" << endl;
+	WriteLine("Performance III - all double");
 	bytes /= 4;
 	ThroughputDouble<29, 16, AtomicsRingBuffer<29>>(bytes/2);
 	ThroughputDouble<29, 16, ModulusRingBuffer<29>>(bytes/2);
@@ -133,9 +165,9 @@ void PerformanceIII(int bytes)
 
 void PerformanceIV(int bytes)
 {   // Relaxed, full size, cache, blocks, predictive
+	WriteLine("Performance IV - single");
 	bytes *= 8;
 	bytes /= 3;
-	cout << "Performance IV - single" << endl;
 	ThroughputSingle<29, 16, RelaxedRingBuffer<29>>(bytes);
 	ThroughputSingle<29, 16, FullRingBuffer   <29>>(bytes);
 	ThroughputSingle<29, 16, CacheRingBuffer  <29>>(bytes);
@@ -160,7 +192,7 @@ void PerformanceIV(int bytes)
 	ThroughputSingle<128, 16, BlocksRingBuffer <128>>(bytes);
 	ThroughputSingle<128, 16, RingBuffer       <128>>(bytes);
 
-	cout << "Performance IV - double" << endl;
+	WriteLine("Performance IV - double");
 	bytes /= 10;
 
 	ThroughputDouble<29, 16, RelaxedRingBuffer<29>>(bytes);
@@ -193,7 +225,7 @@ void PerformanceV(int bytes)
 	bytes *= 8;
 	bytes /= 2;
 
-	cout << "Performance IV - one item vs blocks" << endl;
+	WriteLine("Performance IV - one item vs blocks");
 
 	ThroughputSingle<128, 16, BlocksRingBuffer <128>>(bytes);
 	ThroughputSingle<128, 16, RingBuffer       <128>>(bytes);
@@ -214,7 +246,7 @@ void PerformanceVI(int bytes)
 	constexpr size_t M = 16;
 	bytes /= 3;
 
-	cout << "Performance VI - single all" << endl;
+	WriteLine("Performance VI - single all");
 	ThroughputSingle<N, M, SimpleRingBuffer <N>>(bytes * 3);    // single thread, simple to implement
 	ThroughputSingle<N, M, GenericRingBuffer<N>>(bytes * 10);   // Templatized things									  
 	ThroughputSingle<N, M, LockedRingBuffer <N>>(bytes / 5);    // added locks, API now bad
@@ -226,7 +258,7 @@ void PerformanceVI(int bytes)
 	ThroughputSingleBlock<N, M, BlocksRingBuffer <N>>(bytes * 20);   // read/write blocks
 	ThroughputSingleBlock<N, M, RingBuffer       <N>>(bytes * 20);   // added predictive read/write to avoid false sharing
 
-	cout << "Performance VI - double all" << endl;
+	WriteLine("Performance VI - double all");
 	bytes /= 5;
 	ThroughputDouble<N, M, LockedRingBuffer <N>>(bytes / 30);   // added locks, API now bad
 	ThroughputDouble<N, M, AtomicsRingBuffer<N>>(bytes);        // SPSC using atomics
@@ -249,9 +281,9 @@ bool TestSanity(long size)
 	success &= SanityCheck<32, 3, RingBuffer<32>>(size);
 	success &= SanityCheck<33, 3, RingBuffer<33>>(size);
 	if (success)
-		cout << "Sanity passed" << endl;
+		WriteLine("Sanity passed");
 	else
-		cout << "ERROR: Sanity failed" << endl;
+		WriteLine("ERROR: Sanity failed");
 	return success;
 }
 
@@ -309,7 +341,7 @@ void TestTimingBySize()
 	ThroughputSingle<N, M, SimpleRingBuffer <N>>(51'200'000);   // single thread, simple to implement
 }
 
-
+#ifndef SAMD21_BUILD // ARM board
 int main()
 {
 
@@ -343,4 +375,6 @@ int main()
 	PerformanceVI(bytes);
 	return 0;
 }
+#endif // SAMD21_BUILD
 // end of file
+#endif

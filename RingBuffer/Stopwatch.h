@@ -2,11 +2,16 @@
 #ifndef STOPWATCH_H
 #define STOPWATCH_H
 
+#ifndef SAMD21_BUILD
 #include <chrono>
 #include <cstdint>
+#else
+#include "../Clock.h"
+#endif
 
 class StopWatch 
 {
+#ifndef SAMD21_BUILD    
 	static_assert(std::chrono::steady_clock::is_steady, "Fatal clock: C++ steady_clock not steady");
 public:
 	// using clock = std::chrono::steady_clock;
@@ -77,6 +82,48 @@ private:
 	clock::time_point start_;
 	duration elapsed_{ 0 };
 	bool isRunning_;
+#else
+public:
+	// start, resets clock to zero, unless requested to keep elapsed
+	void Start(bool keepElapsed = false)
+	{
+    	isRunning_ = true;
+    	if (!keepElapsed)
+    	Reset();
+    	start_ = ElapsedMs();
+	}
+
+	void Stop()
+	{
+    	auto diff = ElapsedMs() - start_;
+    	elapsed_ += diff;
+    	isRunning_ = false;
+	}
+
+	void Reset()
+	{
+    	elapsed_ = 0;
+	}
+
+	bool IsRunning() const { return isRunning_;  }
+
+
+
+	// return the elapsed milliseconds since start
+	uint32_t ElapsedMs() const
+	{
+    	auto e = elapsed_;
+    	if (isRunning_)
+        	e += ::ElapsedMs()-start_;
+    	return e;
+	}
+	
+	private:
+	uint32_t start_;
+	uint32_t elapsed_{ 0 };
+	bool isRunning_;
+    
+#endif    
 };
 
 
