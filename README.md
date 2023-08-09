@@ -33,6 +33,6 @@ Some notes
 
 
 
-<img src="C:\Users\Chris\OneDrive\Code\RingBuffer\images\ArtOfMultiprocessorProgramming.jpg" alt="ArtOfMultiprocessorProgramming" style="zoom:50%;" />
+<img src="images\ArtOfMultiprocessorProgramming.jpg" alt="ArtOfMultiprocessorProgramming" style="zoom:50%;" />
 
-<img src="C:\Users\Chris\OneDrive\Code\RingBuffer\images\ConcurrencyInAction.jpg" alt="ConcurrencyInAction" style="zoom:67%;" />
+<img src="images\ConcurrencyInAction.jpg" alt="ConcurrencyInAction" style="zoom:67%;" />
