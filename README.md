@@ -8,7 +8,7 @@ Ten ring buffers are explained, each better than the last, to eke out every ounc
 
 [Here](Making a Ringbuffer.pptx) are PowerPoint slides for the talk. Here are results. [Excel doc with the data](Data.xlsx).
 
-<img src="C:\Users\Chris\OneDrive\Code\RingBuffer\images\Results.png" alt="Results" style="zoom:67%;" />
+<img src="images\Results.png" alt="Results" style="zoom:67%;" />
 
 List of the 10 improvement ideas:
 
