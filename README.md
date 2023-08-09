@@ -2,6 +2,8 @@
 
 Chris Lomont 2023
 
+[https://github.com/ChrisLomont/RingBuffer](https://github.com/ChrisLomont/RingBuffer)
+
 This is code and slides from a talk I gave describing the design and evolution of a high-performance single producer, single consumer ring buffer. I made the talk for programmers I was teaching about nuances of memory models and threading. The ring buffer I needed for an embedded project I was doing.
 
 Ten ring buffers are explained, each better than the last, to eke out every ounce of performance. 
